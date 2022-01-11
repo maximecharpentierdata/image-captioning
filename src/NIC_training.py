@@ -163,3 +163,5 @@ if __name__ == "__main__":
     steps = len(all_train_captions) // BATCH_SIZE
 
     history = model.fit(generator, epochs=EPOCHS, steps_per_epoch=steps, verbose=1)
+
+    model.save("../models/NIC.h5")
