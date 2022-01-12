@@ -4,11 +4,11 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-from src.data_utils import *
+from data_utils import *
 
-CAPTIONS_PATH = "../data/Flickr_Data/Flickr_TextData/Flickr8k.token.txt"
-IMAGES_PATH = "../data/Flickr_Data/Images/"
-GLOVE_PATH = "../glove/"
+CAPTIONS_PATH = "./data/Flickr_Data/Flickr_TextData/Flickr8k.token.txt"
+IMAGES_PATH = "./data/Flickr_Data/Images/"
+GLOVE_PATH = "./glove/"
 
 EMBEDDING_DIM = 200
 BATCH_SIZE = 4
