@@ -33,6 +33,7 @@ def fetch_flickr8k():
     os.remove("./data/Flickr_Data/Flickr_TextData/Flickr_8k.devImages.txt")
     os.remove("./data/Flickr_Data/Flickr_TextData/Flickr_8k.testImages.txt")
     os.remove("./data/Flickr_Data/Flickr_TextData/Flickr_8k.trainImages.txt")
+    os.remove("./train_encoded_images.p")
 
     # Removing unused folders
     shutil.rmtree("./data/Flickr_Data/flickr8ktextfiles")
