@@ -1,4 +1,5 @@
 import os
+import json
 
 import numpy as np
 import tensorflow as tf
@@ -37,38 +38,6 @@ def make_embedding_matrix(vocabulary_size, word_to_index):
     return embedding_matrix
 
 
-def encode_images(train_images, test_images):
-    # Load pretrained InceptionV3 CNN model
-    model = tf.keras.applications.inception_v3.InceptionV3(weights="imagenet")
-    model_new = tf.keras.models.Model(model.input, model.layers[-2].output)
-
-    # Function for resizing and preprocessing images
-    def preprocess(image_path):
-        img = tf.keras.preprocessing.image.load_img(image_path, target_size=(299, 299))
-        x = tf.keras.preprocessing.image.img_to_array(img)
-        x = np.expand_dims(x, axis=0)
-        x = tf.keras.applications.inception_v3.preprocess_input(x)
-        return x
-
-    # Function for computing features
-    def encode(image):
-        image = preprocess(image)
-        fea_vec = model_new.predict(image)
-        fea_vec = np.reshape(fea_vec, fea_vec.shape[1])
-        return fea_vec
-
-    encoding_train = {}
-    for image_path in tqdm(train_images):
-        encoding_train[image_path[len(IMAGES_PATH) :]] = encode(image_path)
-    train_features = encoding_train
-
-    encoding_test = {}
-    for image_path in tqdm(test_images):
-        encoding_test[image_path[len(IMAGES_PATH) :]] = encode(image_path)
-    test_features = encoding_test
-    return train_features, test_features
-
-
 def define_model(max_length, vocabulary_size, embedding_dim):
     features = tf.keras.layers.Input(shape=(2048,))
     dropout_features = tf.keras.layers.Dropout(0.5)(features)
@@ -97,24 +66,23 @@ def glove_transfer_learning(model, embedding_matrix):
 def data_generator(captions, features_list, word_to_index, max_length, batch_size):
     X1, X2, y = list(), list(), list()
     n = 0
-    # Infinite loop
     while True:
         for key, captions_list in captions.items():
             n += 1
-            # Get image features
+            # Getting image features
             features = features_list[key + ".jpg"]
             for caption in captions_list:
-                # Encode the caption sentence
+                # Encoding the caption sentence
                 sequence = [
                     word_to_index[word]
                     for word in caption.split(" ")
                     if word in word_to_index
                 ]
-                # Split the sequence cumulatively word by word
+                # Splitting the sequence cumulatively word by word
                 for i in range(1, len(sequence)):
-                    # Keep the beginning as input, and the next word as output
+                    # Keeping the beginning as input, and the next word as output
                     in_sequence, out_sequence = sequence[:i], sequence[i]
-                    # padding input sequence
+                    # Padding input sequence
                     in_sequence = np.pad(
                         in_sequence, (max_length - len(in_sequence), 0)
                     )
@@ -122,7 +90,7 @@ def data_generator(captions, features_list, word_to_index, max_length, batch_siz
                     X1.append(features)
                     X2.append(in_sequence)
                     y.append(out_sequence)
-            # For batching
+            # Taking care of batching
             if n == batch_size:
                 yield ([np.array(X1), np.array(X2)], np.array(y))
                 X1, X2, y = list(), list(), list()
@@ -132,7 +100,9 @@ def data_generator(captions, features_list, word_to_index, max_length, batch_siz
 if __name__ == "__main__":
     # Importing
     captions = load_captions(CAPTIONS_PATH)
-    train, test, train_images, test_images = make_train_test_images(CAPTIONS_PATH, IMAGES_PATH)
+    train, test, train_images, test_images = make_train_test_images(
+        CAPTIONS_PATH, IMAGES_PATH
+    )
 
     # Make a list with all captions with final preprocessing (adding startseq and endseq)
     train_captions, all_train_captions = reformat_captions(train, captions)
@@ -142,8 +112,15 @@ if __name__ == "__main__":
     index_to_word, word_to_index = tokenization(all_train_captions)
     vocabulary_size = len(index_to_word) + 1
 
+    # Save tokenization
+    with open("./tokenizers/NIC/index_to_word.json", "w") as file:
+        json.dump(index_to_word, file)
+
+    with open("./tokenizers/NIC/word_to_index.json", "w") as file:
+        json.dump(word_to_index, file)
+
     # Image encoding with InceptionV3
-    train_features, test_features = encode_images(train_images, test_images)
+    train_features = encode_images(train_images, IMAGES_PATH)
 
     # Define model
     model = define_model(max_length, vocabulary_size, EMBEDDING_DIM)

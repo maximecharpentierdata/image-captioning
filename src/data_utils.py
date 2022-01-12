@@ -1,6 +1,10 @@
 import collections
 import string
 
+import tensorflow as tf
+from tqdm import tqdm
+import numpy as np
+
 
 def _lower_and_clean_captions(captions):
     """Lower case and delete punctuation"""
@@ -100,3 +104,30 @@ def tokenization(all_train_captions):
         index_to_word[index] = w
         index += 1
     return index_to_word, word_to_index
+
+
+def encode_images(images, images_path):
+    # Load pretrained InceptionV3 CNN model
+    model = tf.keras.applications.inception_v3.InceptionV3(weights="imagenet")
+    model_new = tf.keras.models.Model(model.input, model.layers[-2].output)
+
+    # Function for resizing and preprocessing images
+    def preprocess(image_path):
+        img = tf.keras.preprocessing.image.load_img(image_path, target_size=(299, 299))
+        x = tf.keras.preprocessing.image.img_to_array(img)
+        x = np.expand_dims(x, axis=0)
+        x = tf.keras.applications.inception_v3.preprocess_input(x)
+        return x
+
+    # Function for computing features
+    def encode(image):
+        image = preprocess(image)
+        fea_vec = model_new.predict(image)
+        fea_vec = np.reshape(fea_vec, fea_vec.shape[1])
+        return fea_vec
+
+    features = dict()
+    for image_path in tqdm(images):
+        features[image_path[len(images_path) :]] = encode(image_path)
+
+    return features
