@@ -112,6 +112,9 @@ if __name__ == "__main__":
     index_to_word, word_to_index = tokenization(all_train_captions)
     vocabulary_size = len(index_to_word) + 1
 
+    if not os.path.isdir("./tokenizers/NIC/"):
+        os.makedirs("./tokenizers/NIC/")
+
     # Save tokenization
     with open("./tokenizers/NIC/index_to_word.json", "w") as file:
         json.dump(index_to_word, file)
@@ -141,4 +144,7 @@ if __name__ == "__main__":
 
     history = model.fit(generator, epochs=EPOCHS, steps_per_epoch=steps, verbose=1)
 
-    model.save("../models/NIC.h5")
+    if not os.path.isdir("./models"):
+        os.makedirs("./models")
+        
+    model.save("./models/NIC.h5")
