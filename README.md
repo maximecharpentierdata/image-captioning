@@ -5,7 +5,7 @@ Deep Learning academic project
 
 You need to set your own Python environment with Numpy, Tensorflow and tqdm installed in it.
 
-Then, you will need the fetch the data (Flickr8k dataset) and the GloVE weights for the pretrained embeddings.
+Then, you will need to fetch the data (Flickr8k dataset) and the GloVE weights for the pretrained embeddings.
 
 Run `python src/fetch_data.py` in order to do so.
 

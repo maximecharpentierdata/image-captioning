@@ -9,6 +9,7 @@ from data_utils import *
 
 CAPTIONS_PATH = "./data/Flickr_Data/Flickr_TextData/Flickr8k.token.txt"
 IMAGES_PATH = "./data/Flickr_Data/Images/"
+ENCODED_IMAGES_PATH = "./data/Flickr_Data/encoded_images.json"
 GLOVE_PATH = "./glove/"
 
 EMBEDDING_DIM = 200
@@ -68,6 +69,8 @@ def data_generator(captions, features_list, word_to_index, max_length, batch_siz
     n = 0
     while True:
         for key, captions_list in captions.items():
+            if key + ".jpg" not in features_list:
+                continue
             n += 1
             # Getting image features
             features = features_list[key + ".jpg"]
@@ -123,7 +126,19 @@ if __name__ == "__main__":
         json.dump(word_to_index, file)
 
     # Image encoding with InceptionV3
-    train_features = encode_images(train_images, IMAGES_PATH)
+    if not os.path.exists(ENCODED_IMAGES_PATH):
+        print("### Encoding images.\n")
+        train_features = encode_images(train_images, IMAGES_PATH)
+        print("### Images encoded.\n")
+        with open(ENCODED_IMAGES_PATH, "w") as file:
+            # numpy arrays aren't serializable
+            json.dump({key: array.tolist() for key, array in train_features.items()}, file)
+    else:
+        with open(ENCODED_IMAGES_PATH, "r") as file:
+            # We have already computed all the encodings
+            train_features = json.load(file)
+            train_features = {key: np.array(array) for key, array in train_features.items()}
+
 
     # Define model
     model = define_model(max_length, vocabulary_size, EMBEDDING_DIM)
@@ -142,7 +157,9 @@ if __name__ == "__main__":
 
     steps = len(all_train_captions) // BATCH_SIZE
 
+    print("### Training model.\n")
     history = model.fit(generator, epochs=EPOCHS, steps_per_epoch=steps, verbose=1)
+    print("### Model trained.\n")
 
     if not os.path.isdir("./models"):
         os.makedirs("./models")

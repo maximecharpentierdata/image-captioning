@@ -1,5 +1,6 @@
 import collections
 import string
+import os
 
 import tensorflow as tf
 from tqdm import tqdm
@@ -87,10 +88,8 @@ def tokenization(all_train_captions):
     # Selecting words that appear at least 10 times
     word_count_threshold = 10
     word_counts = {}
-    nsents = 0
 
     for sent in all_train_captions:
-        nsents += 1
         for w in sent.split(" "):
             word_counts[w] = word_counts.get(w, 0) + 1
     vocabulary = [w for w in word_counts if word_counts[w] >= word_count_threshold]
@@ -128,6 +127,7 @@ def encode_images(images, images_path):
 
     features = dict()
     for image_path in tqdm(images):
-        features[image_path[len(images_path) :]] = encode(image_path)
+        if os.path.exists(image_path):
+            features[image_path[len(images_path):]] = encode(image_path)
 
     return features
