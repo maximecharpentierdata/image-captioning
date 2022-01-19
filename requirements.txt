@@ -1,0 +1,7 @@
+tqdm
+tensorflow
+tensorflow-gpu
+keras
+numpy==1.19.5
+kaggle
+pillow
