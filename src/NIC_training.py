@@ -1,19 +1,11 @@
 import os
-import json
-
-# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
 import numpy as np
 import tensorflow as tf
-from tqdm import tqdm
 from itertools import chain
 
 from .data_utils import UNKNOWN_TOKEN
 from .NIC_preprocessing import load_preprocessed
 
-CAPTIONS_PATH = "./data/Flickr_Data/Flickr_TextData/Flickr8k.token.txt"
-IMAGES_PATH = "./data/Flickr_Data/Images/"
-ENCODED_IMAGES_PATH = "./data/Flickr_Data/encoded_images.json"
 GLOVE_PATH = "./glove/"
 
 EMBEDDING_DIM = 200
@@ -104,11 +96,11 @@ def data_generator(captions, features, max_length, batch_size):
 
 
 if __name__ == "__main__":
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-    print("Here are the gpus here: ", gpus)
-    for gpu in gpus:
-        print("I'm disabling gpu ##############################")
-        tf.config.experimental.set_memory_growth(gpu, True)
+    # gpus = tf.config.experimental.list_physical_devices('GPU')
+    # print("Here are the gpus here: ", gpus)
+    # for gpu in gpus:
+    #     print("I'm disabling gpu ##############################")
+    #     tf.config.experimental.set_memory_growth(gpu, True)
 
     # Load preprocessed data
     print("### Loading data")
