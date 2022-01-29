@@ -1,29 +1,30 @@
 import numpy as np
+from .data_utils import START_TOKEN, END_TOKEN
 
 
 def greedy_prediction_NIC(photo, word_to_index, index_to_word, max_length, model):
     """
     Performs greedy prediction for image captioning given an NIC model
     """
-    input_text = "startseq"
-    for _ in range(max_length):
-        # Tokenizing the input sequence
-        sequence = [int(word_to_index[w]) for w in input_text.split() if w in word_to_index]
-
+    caption = [word_to_index[START_TOKEN]]
+    for i in range(max_length-1):
         # Padding the input sentence
-        sequence = np.pad(sequence, (max_length - len(sequence), 0)).reshape(1, -1)
+        sequence = np.pad(caption, (max_length - len(caption), 0)).reshape((1, -1))
         predicted = model.predict([photo, sequence], verbose=0)
+
+        # Here is the greedy
         predicted = np.argmax(predicted)
 
-        predicted_word = index_to_word[str(predicted)]
-        input_text += " " + predicted_word
+        caption.append(predicted)
 
         # Stopping if it is the end of the sentence
-        if predicted_word == "endseq":
+        if predicted == word_to_index[END_TOKEN]:
             break
 
-    # Removing startseq and endseq
-    final_caption = input_text.split()
-    final_caption = final_caption[1:-1]
-    final_caption = " ".join(final_caption)
+    # Removing startseq, endseq and void
+    final_caption = decode_caption(caption[1:-1], index_to_word)
     return final_caption
+
+
+def decode_caption(encoded_caption, index_to_word):
+    return " ".join([index_to_word[idx] for idx in encoded_caption])
