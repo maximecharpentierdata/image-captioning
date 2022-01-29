@@ -3,9 +3,8 @@ import json
 
 import numpy as np
 import tensorflow as tf
-from tqdm import tqdm
 
-from data_utils import *
+from src.data_utils import *
 
 CAPTIONS_PATH = "./data/Flickr_Data/Flickr_TextData/Flickr8k.token.txt"
 IMAGES_PATH = "./data/Flickr_Data/Images/"
@@ -107,9 +106,11 @@ if __name__ == "__main__":
     # Make a list with all captions with final preprocessing (adding startseq and endseq)
     train_captions, all_train_captions = reformat_captions(train, captions)
     max_length = max(len(caption.split(" ")) for caption in all_train_captions)
+    print(all_train_captions[0])
 
     # Do tokenization
     index_to_word, word_to_index = tokenization(all_train_captions)
+    print(len(index_to_word))
     vocabulary_size = len(index_to_word) + 1
 
     if not os.path.isdir("./tokenizers/NIC/"):
