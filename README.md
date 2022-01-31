@@ -22,9 +22,15 @@ The resulting preprocessed data: images encoded as feature vectors, caption toke
 
 Then you can train it by running `python src/NIC_training.py`. No argument is needed.
 
-The model weights are saved at each epoch and are stored in `models/`. A folder is created for each couple of batch size and number of epoch used, and is named `E<n_epochs>_B<batch_size>/`.
+The model weights are saved at each epoch and are stored in `models/`. By default, a folder is created for each run, and is named `E<n_epochs>_B<batch_size>_<date_and_time>/`.
+
+TensorFlow logs are saved by default in the `log/` directory.
 
 Note that these folders will be created automatically if they are not present so there is no need to create them before.
+
+You can then compute new captions on the test set by running the `src/NIC_predicting.py`. It is best to precise which model wieghts that were saved to use, and where to write the computed captions.
+
+Finally to compute the BLEU-4 score you can run the `src/NIC_metrics.py` script.
 
 ### Bottom-Up / Top-Down approach
 
