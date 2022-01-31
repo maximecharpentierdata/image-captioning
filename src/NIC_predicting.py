@@ -7,7 +7,7 @@ from tqdm import tqdm
 from .prediction_utils import greedy_prediction_NIC
 from .NIC_preprocessing import load_preprocessed
 
-PREDICTIONS_PATH = "data/predictions/NIC.json"
+PREDICTIONS_PATH = "data/Flickr_Data/predictions/NIC.json"
 MODEL_PATH = "models/E100_B300/NIC_100.h5"
 
 
@@ -36,6 +36,11 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    if os.path.exists(args.dest_path) and not args.force:
+        print("Predictions already exist")
+        quit()
+    os.makedirs(os.path.dirname(args.dest_path), exist_ok=True)
+
     preprocessed_data = load_preprocessed(
         filter_objects=["word_to_index", "test_features"]
     )
@@ -48,11 +53,6 @@ if __name__ == "__main__":
 
     max_length = model.layers[0].input_shape[0][1]
 
-    if os.path.exists(args.dest_path) and not args.force:
-        print("Predictions already exist")
-        quit()
-
-    os.makedirs(os.path.dirname(args.dest_path), exist_ok=True)
 
     predictions = {}
     for image_id, feature_vec in tqdm(test_features.items()):
@@ -65,6 +65,6 @@ if __name__ == "__main__":
         )
 
     with open(args.dest_path, "w") as dest_file:
-        json.dump(predictions, dest_file)
+        json.dump(predictions, dest_file, indent=4)
 
     print("Predictions computed and written down")

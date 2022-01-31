@@ -1,7 +1,6 @@
 import string
 import os
 import collections
-import tensorflow as tf
 from tqdm import tqdm
 import numpy as np
 
@@ -45,6 +44,7 @@ def load_captions(captions_path):
 
 
 def encode_images(image_ids, images_path):
+    import tensorflow as tf
     # Load pretrained InceptionV3 CNN model
     model = tf.keras.applications.inception_v3.InceptionV3(weights="imagenet")
     model_new = tf.keras.models.Model(model.input, model.layers[-2].output)
@@ -83,3 +83,6 @@ def indexate_captions(captions, word_to_index):
             indexed_caption = [word_to_index[word] for word in tokens]
             res[key].append(indexed_caption)
     return res
+    
+def decode_caption(encoded_caption, index_to_word):
+    return " ".join([index_to_word[idx] for idx in encoded_caption])

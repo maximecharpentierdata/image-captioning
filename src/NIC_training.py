@@ -1,4 +1,5 @@
 import os
+import time
 import numpy as np
 import tensorflow as tf
 from itertools import chain
@@ -11,6 +12,8 @@ GLOVE_PATH = "./glove/"
 EMBEDDING_DIM = 200
 BATCH_SIZE = 300
 EPOCHS = 100
+
+DIR_NAME = f"E{EPOCHS}_B{BATCH_SIZE}_{time.strftime('%m_%d_%H_%M')}"
 
 
 def make_embedding_matrix(word_to_index):
@@ -71,6 +74,7 @@ def data_generator(captions, features, max_length, batch_size):
     while True:
         for key, captions_list in captions.items():
             if key not in features.keys():
+                print(key)
                 continue
             n += 1
             # Getting image features
@@ -96,6 +100,24 @@ def data_generator(captions, features, max_length, batch_size):
 
 
 if __name__ == "__main__":
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser(
+        description="Train the NIC model"
+    )
+
+    parser.add_argument(
+        "--dest_path",
+        help="Where to write the model checkpoints",
+        default=os.path.join("models", DIR_NAME),
+    )
+    parser.add_argument(
+        "--tensorboard_path",
+        help="Where to write the tensorboard logging files",
+        default=os.path.join("logs", DIR_NAME),
+    )
+    args = parser.parse_args()
+
     # gpus = tf.config.experimental.list_physical_devices('GPU')
     # print("Here are the gpus here: ", gpus)
     # for gpu in gpus:
@@ -131,24 +153,27 @@ if __name__ == "__main__":
 
     steps = len(train_captions) // BATCH_SIZE
 
-    dest_dir = f"./models/E{EPOCHS}_B{BATCH_SIZE}"
-    os.makedirs(dest_dir, exist_ok=True)
-    os.makedirs("./logs", exist_ok=True)
+    os.makedirs(args.dest_path, exist_ok=True)
+    os.makedirs(args.tensorboard_path, exist_ok=True)
 
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(
-            filepath=os.path.join(dest_dir, 'NIC_{epoch:02d}.h5')),
+            filepath=os.path.join(args.dest_path, 'NIC_{epoch:02d}.h5')),
         tf.keras.callbacks.TensorBoard(
             histogram_freq=1,
-            log_dir="./logs"
+            log_dir=args.tensorboard_path
         ),
     ]
 
+    validation_data=next(
+        data_generator(
+            val_captions, val_features, max_length, len(val_captions)
+        )
+    )
+
     print("### Training model.\n")
-    history = model.fit(
+    model.fit(
         generator, epochs=EPOCHS, steps_per_epoch=steps, verbose=1, callbacks=callbacks,
-        # validation_data=data_generator(
-        #     val_captions, val_features, max_length, BATCH_SIZE
-        # )
+        validation_data=validation_data
     )
     print("### Model trained.\n")
