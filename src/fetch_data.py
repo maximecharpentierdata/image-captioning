@@ -4,16 +4,8 @@ import os
 import urllib.request
 import zipfile
 from tqdm import tqdm
-from enum import Enum
 
-from .config import DATA_ROOT_PATH
-
-
-class Datasets(Enum):
-    COCO = "COCO"
-    FLICKR = "Flickr8k"
-
-DATASET = Datasets.COCO  # Change here to the dataset you want
+from .config import DATA_ROOT_PATH, DATASET, Datasets
 
 # For progress bar
 class DownloadProgressBar(tqdm):
@@ -78,12 +70,8 @@ def fetch_COCO(root):
     # Downloading annotations files
     url = "http://images.cocodataset.org/annotations/annotations_trainval2014.zip"
     download_url(url, os.path.join(coco_root, "annotations_trainval2014.zip"))
-    url = "http://images.cocodataset.org/annotations/image_info_test2014.zip"
-    download_url(url, os.path.join(coco_root, "image_info_test2014.zip"))
     # Unzipping
     with zipfile.ZipFile(os.path.join(coco_root, "annotations_trainval2014.zip"), "r") as zip_ref:
-        zip_ref.extractall(coco_root)
-    with zipfile.ZipFile(os.path.join(coco_root, "image_info_test2014.zip"), "r") as zip_ref:
         zip_ref.extractall(coco_root)
 
     # Removing unused iles
@@ -95,7 +83,14 @@ def fetch_COCO(root):
     os.remove(os.path.join(coco_root, "image_info_test2014.zip"))
     shutil.move(os.path.join(coco_root, "annotations/captions_val2014.json"), os.path.join(coco_root, "val", "captions.json"))
     shutil.move(os.path.join(coco_root, "annotations/captions_train2014.json"), os.path.join(coco_root, "train", "captions.json"))
-    shutil.move(os.path.join(coco_root, "annotations/image_info_test2014.json"), os.path.join(coco_root, "test", "captions.json"))
+
+    # Downloading test set info file
+    url = "http://images.cocodataset.org/annotations/image_info_test2014.zip"
+    download_url(url, os.path.join(coco_root, "image_info_test2014.zip"))
+    with zipfile.ZipFile(os.path.join(coco_root, "image_info_test2014.zip"), "r") as zip_ref:
+        zip_ref.extractall(coco_root)
+    shutil.move(os.path.join(coco_root, "annotations/image_info_test2014.json"), os.path.join(coco_root, "test", "images_info"))
+    os.remove(os.path.join(coco_root, "annotations"))
 
     # Downloading images
     for split in splits:

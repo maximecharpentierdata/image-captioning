@@ -8,6 +8,7 @@ START_TOKEN = "startseq"
 END_TOKEN = "endseq"
 UNKNOWN_TOKEN = "unktok"
 
+
 def _lower_and_clean_captions(captions):
     """Lower case and delete punctuation"""
     table = str.maketrans("", "", string.punctuation)
@@ -21,30 +22,9 @@ def _lower_and_clean_captions(captions):
     return captions
 
 
-def load_captions(captions_path):
-    """Load and preprocess all captions and store them in a dictionnary with
-    photos id
-    """
-
-    with open(captions_path, "r") as document:
-        document = document.read()
-
-    # Get the captions and associate them to the right photo id
-    captions = dict()
-    for line in document.split("\n"):
-        tokens = line.split()
-        if len(line) > 2:
-            image_id = tokens[0].split(".")[0]
-            image_caption = " ".join(tokens[1:])
-            if image_id not in captions:
-                captions[image_id] = list()
-            captions[image_id].append(image_caption)
-    captions = _lower_and_clean_captions(captions)
-    return captions
-
-
-def encode_images(image_ids, images_path):
+def encode_images(image_ids, images_path, id_to_filename=None):
     import tensorflow as tf
+
     # Load pretrained InceptionV3 CNN model
     model = tf.keras.applications.inception_v3.InceptionV3(weights="imagenet")
     model_new = tf.keras.models.Model(model.input, model.layers[-2].output)
@@ -65,8 +45,10 @@ def encode_images(image_ids, images_path):
         return fea_vec
 
     features = dict()
+    if id_to_filename is None:
+        id_to_filename = {image_id: str(image_id) + ".jpg"}
     for image_id in tqdm(image_ids):
-        image_path = os.path.join(images_path, image_id + ".jpg")
+        image_path = os.path.join(images_path, id_to_filename[image_id])
         if os.path.exists(image_path):
             features[image_id] = encode(image_path)
 
@@ -77,12 +59,16 @@ def indexate_captions(captions, word_to_index):
     res = collections.defaultdict(list)
     for key, caption_list in captions.items():
         for caption in caption_list:
-            tokens = [word if word in word_to_index else UNKNOWN_TOKEN for word in caption.split()]
+            tokens = [
+                word if word in word_to_index else UNKNOWN_TOKEN
+                for word in caption.split()
+            ]
             tokens.insert(0, START_TOKEN)
             tokens.append(END_TOKEN)
             indexed_caption = [word_to_index[word] for word in tokens]
             res[key].append(indexed_caption)
     return res
-    
+
+
 def decode_caption(encoded_caption, index_to_word):
     return " ".join([index_to_word[idx] for idx in encoded_caption])
