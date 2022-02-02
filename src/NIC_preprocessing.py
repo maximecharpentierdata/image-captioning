@@ -57,6 +57,7 @@ def load_preprocessed(project_root="", filter_objects=None):
         if filter_objects is not None and key not in filter_objects:
             continue
         with open(path, "r") as file:
+            file.seek(0)
             res[key] = json.load(file)
     return res
 
