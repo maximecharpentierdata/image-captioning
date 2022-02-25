@@ -137,6 +137,7 @@ glove/
 .DS_Store
 slurm_scripts/
 logs/
+*.o*
 
 # Models
 *.h5

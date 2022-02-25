@@ -1,7 +1,11 @@
 tqdm
 tensorflow
 tensorflow-gpu
+cudnn
 keras
 numpy==1.19.5
 kaggle
 pillow
+pydot
+pycocotools
+pycocoevalcap

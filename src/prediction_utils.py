@@ -1,5 +1,5 @@
 import numpy as np
-from .data_utils import START_TOKEN, END_TOKEN
+from .data_utils import decode_caption, START_TOKEN, END_TOKEN
 
 
 def greedy_prediction_NIC(photo, word_to_index, index_to_word, max_length, model):
@@ -24,7 +24,3 @@ def greedy_prediction_NIC(photo, word_to_index, index_to_word, max_length, model
     # Removing startseq, endseq and void
     final_caption = decode_caption(caption[1:-1], index_to_word)
     return final_caption
-
-
-def decode_caption(encoded_caption, index_to_word):
-    return " ".join([index_to_word[idx] for idx in encoded_caption])
