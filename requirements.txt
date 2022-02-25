@@ -8,3 +8,4 @@ kaggle
 pillow
 pydot
 pycocotools
+pycocoevalcap
