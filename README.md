@@ -46,4 +46,4 @@ BLEU 4 | Meteor | Cider | Spice
 
 ### Bottom-Up / Top-Down approach
 
-The next step of our project, to implement the model from article (Bottom-Up and Top-Down Attention for Image Captioning and Visual Question Answering)[https://openaccess.thecvf.com/content_cvpr_2018/papers/Anderson_Bottom-Up_and_Top-Down_CVPR_2018_paper.pdf]
+The next step of our project, to implement the model from article [Bottom-Up and Top-Down Attention for Image Captioning and Visual Question Answering](https://openaccess.thecvf.com/content_cvpr_2018/papers/Anderson_Bottom-Up_and_Top-Down_CVPR_2018_paper.pdf)
