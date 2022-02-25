@@ -7,7 +7,14 @@ from tqdm import tqdm
 from .prediction_utils import greedy_prediction_NIC
 from .NIC_preprocessing import load_preprocessed
 
-PREDICTIONS_PATH = "data/Flickr_Data/predictions/NIC.json"
+from .config import DATA_ROOT_PATH, DATASET, Datasets
+
+if DATASET == Datasets.FLICKR:
+    DATASET_ROOT = os.path.join(DATA_ROOT_PATH, "Flickr_Data/")
+elif DATASET == Datasets.COCO:
+    DATASET_ROOT = os.path.join(DATA_ROOT_PATH, "COCO/")
+
+PREDICTIONS_PATH = os.path.join(DATASET_ROOT, f"predictions/B500_concat_49/NIC.json")
 MODEL_PATH = "models/E100_B300/NIC_100.h5"
 
 
@@ -23,7 +30,6 @@ if __name__ == "__main__":
         help="Where to write the predictions file",
         default=PREDICTIONS_PATH,
     )
-    # parser.add_argument("--input_path", help="Where to read the test images features")
     parser.add_argument(
         "--model_path",
         help="Path to the .h5 file containing model weights",
@@ -34,6 +40,12 @@ if __name__ == "__main__":
         help="Force recomputing if the file alreday exists",
         action="store_true",
     )
+    parser.add_argument(
+        "--subset",
+        choices=['train', 'test', 'val'],
+        default="test",
+        help="Specify which subset to compute the captions on",
+    )
     args = parser.parse_args()
 
     if os.path.exists(args.dest_path) and not args.force:
@@ -42,10 +54,10 @@ if __name__ == "__main__":
     os.makedirs(os.path.dirname(args.dest_path), exist_ok=True)
 
     preprocessed_data = load_preprocessed(
-        filter_objects=["word_to_index", "test_features"]
+        filter_objects=["word_to_index", f"{args.subset}_features"]
     )
     word_to_index = preprocessed_data["word_to_index"]
-    test_features = preprocessed_data["test_features"]
+    features = preprocessed_data[f"{args.subset}_features"]
 
     index_to_word = {word: idx for idx, word in word_to_index.items()}
 
@@ -53,9 +65,8 @@ if __name__ == "__main__":
 
     max_length = model.layers[0].input_shape[0][1]
 
-
     predictions = {}
-    for image_id, feature_vec in tqdm(test_features.items()):
+    for image_id, feature_vec in tqdm(features.items()):
         predictions[image_id] = greedy_prediction_NIC(
             np.array(feature_vec).reshape((1, -1)),
             word_to_index,

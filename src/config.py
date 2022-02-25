@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-DATA_ROOT_PATH="/workdir/prevotb/data"
+DATA_ROOT_PATH="../workdir/data"
 
 class Datasets(Enum):
     COCO = "COCO"

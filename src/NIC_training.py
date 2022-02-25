@@ -42,7 +42,7 @@ def make_embedding_matrix(word_to_index):
 def define_model(max_length, vocabulary_size, embedding_dim):
     features = tf.keras.layers.Input(shape=(2048,))
     dropout_features = tf.keras.layers.Dropout(0.5)(features)
-    encoded = tf.keras.layers.Dense(256, activation="relu")(dropout_features)
+    encoded = tf.keras.layers.Dense(512, activation="relu")(dropout_features)
 
     caption = tf.keras.layers.Input(shape=(max_length,))
     embedded = tf.keras.layers.Embedding(
@@ -51,8 +51,8 @@ def define_model(max_length, vocabulary_size, embedding_dim):
     dropout_caption = tf.keras.layers.Dropout(0.5)(embedded)
     out_lstm = tf.keras.layers.LSTM(256)(dropout_caption)
 
-    decoder1 = tf.keras.layers.add([encoded, out_lstm])
-    decoder2 = tf.keras.layers.Dense(256, activation="relu")(decoder1)
+    decoder1 = tf.keras.layers.concatenate([encoded, out_lstm])
+    decoder2 = tf.keras.layers.Dense(768, activation="relu")(decoder1)
     outputs = tf.keras.layers.Dense(vocabulary_size + 1, activation="softmax")(decoder2)
     model = tf.keras.models.Model(inputs=[features, caption], outputs=outputs)
     return model
@@ -116,12 +116,7 @@ if __name__ == "__main__":
     dir_name = f"E{EPOCHS}_B{args.batch_size}_{time.strftime('%m_%d_%H_%M')}"
     dest_path = args.dest_path or os.path.join("models", dir_name)
     tensorboard_path = args.tensorboard_path or os.path.join("logs", dir_name)
-    # gpus = tf.config.experimental.list_physical_devices('GPU')
-    # print("Here are the gpus here: ", gpus)
-    # for gpu in gpus:
-    #     print("I'm disabling gpu ##############################")
-    #     tf.config.experimental.set_memory_growth(gpu, True)
-
+    
     # Load preprocessed data
     print("### Loading data")
     preprocessed_data = load_preprocessed(
@@ -181,7 +176,7 @@ if __name__ == "__main__":
     ]
 
     validation_data = next(
-        data_generator(val_captions, val_features, max_length, len(val_captions)/4)
+        data_generator(val_captions, val_features, max_length, len(val_captions))
     )
 
     print("### Training model.\n")
